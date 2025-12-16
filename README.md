@@ -1,1 +1,1 @@
-# Qu-n-l-thi-t-b-y-t-
+# Quan-ly-thiet-bi-y-te
