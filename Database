@@ -1,0 +1,152 @@
+CREATE DATABASE Hospital_Medical_Equipment;
+USE Hospital_Medical_Equipment;
+CREATE TABLE User (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE,
+    password_hash VARCHAR(255),
+    full_name VARCHAR(100),
+    role ENUM('admin','staff','technician'),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    status ENUM('active','inactive') DEFAULT 'active'
+);
+CREATE TABLE Department (
+    department_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    location VARCHAR(100)
+);
+CREATE TABLE Admin_Info (
+    admin_id INT PRIMARY KEY,
+    position VARCHAR(100),
+    privilege_level INT,
+    note TEXT,
+    FOREIGN KEY (admin_id) REFERENCES User(user_id)
+);
+CREATE TABLE Staff_Info (
+    staff_id INT PRIMARY KEY,
+    department_id INT,
+    job_title VARCHAR(100),
+    shift ENUM('morning','afternoon','night'),
+    note TEXT,
+    FOREIGN KEY (staff_id) REFERENCES User(user_id),
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
+CREATE TABLE Technician_Info (
+    tech_id INT PRIMARY KEY,
+    qualification VARCHAR(100),
+    certification VARCHAR(200),
+    specialization VARCHAR(100),
+    experience_years INT,
+    working_center VARCHAR(100),
+    note TEXT,
+    FOREIGN KEY (tech_id) REFERENCES User(user_id)
+);
+CREATE TABLE Device (
+    device_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    model VARCHAR(100),
+    serial_number VARCHAR(100),
+    category VARCHAR(100),
+    purchase_date DATE,
+    price DECIMAL(12,2),
+    status ENUM('active','repairing','decommissioned') DEFAULT 'active',
+    department_id INT,
+    vendor_id INT,
+    FOREIGN KEY (department_id) REFERENCES Department(department_id),
+    FOREIGN KEY (vendor_id) REFERENCES Vendor(vendor_id)
+);
+CREATE TABLE Warranty (
+    warranty_id INT PRIMARY KEY AUTO_INCREMENT,
+    device_id INT UNIQUE,
+    start_date DATE,
+    end_date DATE,
+    terms TEXT,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+);
+CREATE TABLE Maintenance (
+    maintenance_id INT PRIMARY KEY AUTO_INCREMENT,
+    device_id INT,
+    maintenance_date DATE,
+    next_maintenance DATE,
+    description TEXT,
+    technician_id INT,
+    status VARCHAR(20),
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id),
+    FOREIGN KEY (technician_id) REFERENCES Technician_Info(tech_id)
+);
+CREATE TABLE Repair (
+    repair_id INT PRIMARY KEY AUTO_INCREMENT,
+    device_id INT,
+    report_id INT,
+    repair_date DATE,
+    technician_id INT,
+    cause TEXT,
+    solution TEXT,
+    cost DECIMAL(12,2),
+    status VARCHAR(20),
+    created_at DATETIME,
+    updated_at DATETIME,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id),
+    FOREIGN KEY (technician_id) REFERENCES Technician_Info(tech_id)
+);
+CREATE TABLE Device_Fault_Report (
+    report_id INT PRIMARY KEY AUTO_INCREMENT,
+    device_id INT,
+    reporter_id INT,
+    report_date DATETIME,
+    fault_description TEXT,
+    severity ENUM('low','medium','high','critical'),
+    status ENUM('pending','processing','fixed','closed') DEFAULT 'pending',
+    technician_id INT,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id),
+    FOREIGN KEY (reporter_id) REFERENCES User(user_id),
+    FOREIGN KEY (technician_id) REFERENCES Technician_Info(tech_id)
+);
+CREATE TABLE Notification (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    created_at DATETIME,
+    type ENUM('fault','maintenance','warning','info'),
+    title VARCHAR(200),
+    message TEXT,
+    is_read BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES User(user_id)
+);
+CREATE TABLE Device_Statistics (
+    stats_id INT PRIMARY KEY AUTO_INCREMENT,
+    device_id INT,
+    total_usage_hours INT DEFAULT 0,
+    total_failures INT DEFAULT 0,
+    total_maintenance INT DEFAULT 0,
+    last_maintenance_date DATE,
+    uptime_percentage DECIMAL(5,2),
+    updated_at DATETIME,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+);
+CREATE TABLE Device_History (
+    history_id INT PRIMARY KEY AUTO_INCREMENT,
+    device_id INT,
+    event_type ENUM(
+        'created','updated','transferred',
+        'fault_reported','maintenance',
+        'repair','decommissioned'
+    ),
+    event_date DATETIME,
+    performed_by INT,
+    description TEXT,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id),
+    FOREIGN KEY (performed_by) REFERENCES User(user_id)
+);
+CREATE TABLE Transfer (
+    transfer_id INT PRIMARY KEY AUTO_INCREMENT,
+    device_id INT,
+    from_department INT,
+    to_department INT,
+    transfer_date DATE,
+    reason TEXT,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id),
+    FOREIGN KEY (from_department) REFERENCES Department(department_id),
+    FOREIGN KEY (to_department) REFERENCES Department(department_id)
+);
