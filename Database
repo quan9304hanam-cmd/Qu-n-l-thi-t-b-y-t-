@@ -45,24 +45,35 @@ CREATE TABLE Device (
     device_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
     model VARCHAR(100),
-    serial_number VARCHAR(100),
+    serial_number VARCHAR(100) UNIQUE,
     category VARCHAR(100),
+    number INT,
     purchase_date DATE,
     price DECIMAL(12,2),
+    unit VARCHAR(50),
+    produce_year YEAR,
+    country VARCHAR(100),
+    manufacturer VARCHAR(100),
+    use_year YEAR,
     status ENUM('active','repairing','decommissioned') DEFAULT 'active',
+
     department_id INT,
     vendor_id INT,
+    department_dean INT,
+    staff_id INT,
+    tech_id INT,
+    maintenance VARCHAR(100),
+    repair VARCHAR(100),
+    history VARCHAR(100),
+    note TEXT,
+
     FOREIGN KEY (department_id) REFERENCES Department(department_id),
-    FOREIGN KEY (vendor_id) REFERENCES Vendor(vendor_id)
+    FOREIGN KEY (vendor_id) REFERENCES Vendor(vendor_id),
+    FOREIGN KEY (department_dean) REFERENCES User(user_id),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (tech_id) REFERENCES Technician_Info(tech_id)
 );
-CREATE TABLE Warranty (
-    warranty_id INT PRIMARY KEY AUTO_INCREMENT,
-    device_id INT UNIQUE,
-    start_date DATE,
-    end_date DATE,
-    terms TEXT,
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
-);
+
 CREATE TABLE Maintenance (
     maintenance_id INT PRIMARY KEY AUTO_INCREMENT,
     device_id INT,
